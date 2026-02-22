@@ -1,0 +1,30 @@
+<% content_for :title, "관리자 - 사용자 관리" %>
+
+<section>
+  <h1>사용자 관리</h1>
+
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>이름</th>
+        <th>이메일</th>
+        <th>권한</th>
+        <th>가입일</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td><%= user.id %></td>
+          <td><%= user.name %></td>
+          <td><%= user.email %></td>
+          <td><%= user.admin? ? "관리자" : "일반" %></td>
+          <td><%= user.created_at.strftime("%Y-%m-%d") %></td>
+          <td><%= link_to "상세", admin_user_path(user), class: "text-link" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>

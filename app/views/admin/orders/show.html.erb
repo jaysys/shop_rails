@@ -1,0 +1,42 @@
+<% content_for :title, "관리자 - 주문 상세" %>
+
+<section>
+  <h1>주문 상세 (관리자)</h1>
+
+  <div class="checkout-card">
+    <p>주문번호: <strong><%= @order.order_id %></strong></p>
+    <p>사용자: <strong><%= @order.user&.name || "(없음)" %></strong> (<%= @order.user&.email || "-" %>)</p>
+    <p>주문명: <strong><%= @order.order_name %></strong></p>
+    <p>결제상태: <strong><%= @order.status %></strong></p>
+    <p>결제완료일: <strong><%= @order.updated_at.strftime("%Y-%m-%d %H:%M:%S") %></strong></p>
+    <p>결제금액: <strong><%= number_to_currency(@order.amount, unit: "₩", precision: 0) %></strong></p>
+  </div>
+
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>상품코드</th>
+        <th>상품명</th>
+        <th>단가</th>
+        <th>수량</th>
+        <th>소계</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @order_items.each do |item| %>
+        <tr>
+          <td><%= item.product_id.present? ? "P-#{item.product_id}" : "-" %></td>
+          <td><%= item.product_name %></td>
+          <td><%= number_to_currency(item.unit_price) %></td>
+          <td><%= item.quantity %></td>
+          <td><%= number_to_currency(item.subtotal) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="cart-footer">
+    <%= link_to "사용자 상세로", admin_user_path(@order.user), class: "text-link" if @order.user.present? %>
+    <%= link_to "사용자 목록", admin_users_path, class: "text-link" %>
+  </div>
+</section>

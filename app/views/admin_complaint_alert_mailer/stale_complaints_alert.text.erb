@@ -1,0 +1,17 @@
+접수 상태 문의 알림
+
+기준 시각: <%= @cutoff_time.strftime("%Y-%m-%d %H:%M:%S") %>
+설정 기준: <%= @threshold_hours %>시간 경과
+접수됨 상태 문의 건수: <%= @stale_complaints.size %>
+
+<% @stale_complaints.each do |complaint| %>
+- ID: <%= complaint.id %>
+  제목: <%= complaint.title %>
+  사용자: <%= complaint.user&.email || "-" %>
+  주문번호: <%= complaint.order&.order_id || "-" %>
+  등록일: <%= complaint.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+<% end %>
+
+<% if @admin_url.present? %>
+관리자 문의 화면: <%= @admin_url %>
+<% end %>

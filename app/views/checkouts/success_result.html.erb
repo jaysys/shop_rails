@@ -1,0 +1,14 @@
+<% content_for :title, "결제 완료" %>
+
+<section class="checkout-card">
+  <h1>결제가 완료되었습니다</h1>
+  <p>주문번호: <strong><%= @order.order_id %></strong></p>
+  <p>결제키: <code><%= @order.payment_key %></code></p>
+  <p>결제금액: <strong><%= number_to_currency(@order.amount, unit: "₩", precision: 0) %></strong></p>
+
+  <div class="row">
+    <%= link_to "주문 상세 보기", order_path(@order), class: "text-link" %>
+    <%= link_to "상품 계속 보기", products_path, class: "text-link" %>
+    <%= link_to "장바구니", cart_path, class: "text-link" %>
+  </div>
+</section>

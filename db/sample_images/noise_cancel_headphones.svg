@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+  <defs>
+    <linearGradient id="g4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="640" fill="url(#g4)"/>
+  <path d="M300 330 C300 170, 660 170, 660 330" fill="none" stroke="#ffffffbb" stroke-width="24"/>
+  <rect x="250" y="300" width="90" height="180" rx="34" fill="#ffffffcc"/>
+  <rect x="620" y="300" width="90" height="180" rx="34" fill="#ffffffcc"/>
+  <text x="480" y="140" text-anchor="middle" font-size="48" font-family="Arial, sans-serif" fill="#ffffff">NOISE-CANCEL</text>
+  <text x="480" y="188" text-anchor="middle" font-size="48" font-family="Arial, sans-serif" fill="#ffffff">HEADPHONES</text>
+</svg>

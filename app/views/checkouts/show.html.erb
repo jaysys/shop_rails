@@ -1,0 +1,166 @@
+<% content_for :title, "결제" %>
+<% content_for :head do %>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+<% end %>
+
+<section>
+  <h1>결제하기</h1>
+
+  <div class="checkout-card">
+    <p>주문번호: <strong><%= @order.order_id %></strong></p>
+    <p>주문명: <strong><%= @order.order_name %></strong></p>
+    <p>결제금액: <strong><%= number_to_currency(@total_amount, unit: "₩", precision: 0) %></strong></p>
+
+    <% if @client_key.blank? %>
+      <p class="flash alert">`TOSS_CLIENT_KEY` 환경변수가 없어 결제를 진행할 수 없습니다.</p>
+    <% else %>
+      <button
+        id="pay-button"
+        class="btn"
+        data-client-key="<%= @client_key %>"
+        data-key-type="<%= @client_key_type %>"
+        data-amount="<%= @total_amount %>"
+        data-order-id="<%= @order.order_id %>"
+        data-order-name="<%= @order.order_name %>"
+        data-customer-key="<%= @customer_key %>"
+        data-success-url="<%= success_checkout_url %>"
+        data-fail-url="<%= fail_checkout_url %>"
+      >토스페이먼츠로 결제</button>
+    <% end %>
+
+    <div class="row">
+      <%= link_to "장바구니로", cart_path, class: "text-link" %>
+      <%= link_to "상품 목록", products_path, class: "text-link" %>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener("turbo:load", () => {
+    const payButton = document.getElementById("pay-button");
+    if (!payButton || payButton.dataset.bound === "1") return;
+    payButton.dataset.bound = "1";
+
+    const csrfToken = document.querySelector("meta[name='csrf-token']")?.content;
+    const buildBasePayload = () => ({
+      key_type: payButton.dataset.keyType,
+      order_id: payButton.dataset.orderId,
+      amount: Number(payButton.dataset.amount || 0),
+      currency: "KRW",
+      page_url: window.location.href,
+      referrer: document.referrer || "",
+      user_agent: navigator.userAgent,
+      sdk_loaded: typeof TossPayments !== "undefined"
+    });
+
+    const safeJson = (value) => {
+      try {
+        return JSON.stringify(value);
+      } catch (_) {
+        return String(value);
+      }
+    };
+
+    const reportClientError = async (payload) => {
+      try {
+        await fetch("<%= client_error_checkout_path %>", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (_) {
+      }
+    };
+
+    window.addEventListener("error", (event) => {
+      reportClientError({
+        ...buildBasePayload(),
+        stage: "window_error",
+        name: event?.error?.name || "WindowError",
+        code: event?.error?.code,
+        message: event?.message,
+        stack: event?.error?.stack,
+        raw: safeJson({
+          filename: event?.filename,
+          lineno: event?.lineno,
+          colno: event?.colno
+        })
+      });
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+      const reason = event?.reason;
+      reportClientError({
+        ...buildBasePayload(),
+        stage: "unhandled_rejection",
+        name: reason?.name || "UnhandledRejection",
+        code: reason?.code,
+        message: reason?.message || String(reason),
+        stack: reason?.stack,
+        raw: safeJson(reason)
+      });
+    });
+
+    payButton.addEventListener("click", async () => {
+      try {
+        const keyType = payButton.dataset.keyType;
+        const keyPreview = `${(payButton.dataset.clientKey || "").slice(0, 10)}...${(payButton.dataset.clientKey || "").slice(-6)}`;
+        console.info("[TossCheckout] keyType=%s keyPreview=%s orderId=%s", keyType, keyPreview, payButton.dataset.orderId);
+
+        if (keyType !== "api_individual_client") {
+          await reportClientError({
+            ...buildBasePayload(),
+            stage: "before_request_payment",
+            message: "invalid_client_key_type"
+          });
+          alert("API 개별 연동 클라이언트 키(ck)가 아닙니다. .env의 TOSS_API_CLIENT_KEY를 확인하세요.");
+          return;
+        }
+
+        if (typeof TossPayments === "undefined") {
+          await reportClientError({
+            ...buildBasePayload(),
+            stage: "before_request_payment",
+            message: "toss_sdk_not_loaded"
+          });
+          alert("토스 스크립트를 불러오지 못했습니다.");
+          return;
+        }
+
+        const tossPayments = TossPayments(payButton.dataset.clientKey);
+        const payment = tossPayments.payment({ customerKey: payButton.dataset.customerKey });
+
+        const requestPayload = {
+          method: "CARD",
+          amount: {
+            currency: "KRW",
+            value: Number(payButton.dataset.amount)
+          },
+          orderId: payButton.dataset.orderId,
+          orderName: payButton.dataset.orderName,
+          successUrl: payButton.dataset.successUrl,
+          failUrl: payButton.dataset.failUrl
+        };
+
+        console.info("[TossCheckout] request_payment payload=%o", requestPayload);
+
+        await payment.requestPayment(requestPayload);
+      } catch (error) {
+        console.error("[TossCheckout] requestPayment_error", error);
+        await reportClientError({
+          ...buildBasePayload(),
+          stage: "request_payment",
+          name: error?.name,
+          code: error?.code,
+          message: error?.message,
+          stack: error?.stack,
+          raw: safeJson(error)
+        });
+        alert(error.message || "결제 요청 중 오류가 발생했습니다.");
+      }
+    });
+  });
+</script>

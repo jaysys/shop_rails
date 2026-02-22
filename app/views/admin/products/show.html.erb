@@ -1,0 +1,28 @@
+<% content_for :title, "관리자 - 상품 상세" %>
+
+<section>
+  <h1>상품 상세</h1>
+
+  <div class="checkout-card">
+    <% if @product.image.attached? %>
+      <%= image_tag @product.image, class: "thumb-lg" %>
+    <% end %>
+
+    <p>ID: <strong><%= @product.id %></strong></p>
+    <p>상품명: <strong><%= @product.name %></strong></p>
+    <p>
+      카테고리:
+      <strong>
+        <%= @product.categories.any? ? @product.categories.map(&:name).join(", ") : "미지정" %>
+      </strong>
+    </p>
+    <p>가격: <strong><%= number_to_currency(@product.price) %></strong></p>
+    <p>설명: <%= simple_format(@product.description) %></p>
+
+    <div class="row">
+      <%= link_to "수정", edit_admin_product_path(@product), class: "btn small" %>
+      <%= button_to "삭제", admin_product_path(@product), method: :delete, class: "btn danger small", form: { data: { turbo_confirm: "이 상품을 삭제할까요?" }, class: "inline-form" } %>
+      <%= link_to "목록", admin_products_path, class: "text-link" %>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+require "rbconfig"
+
+# Ensure DB exists/migrated when starting the web server directly via `bin/rails s`.
+if ENV["SKIP_AUTO_DB_PREPARE"] != "1" && %w[s server].include?(ARGV.first)
+  app_root = File.expand_path("..", __dir__)
+  Dir.mkdir(File.join(app_root, "storage")) unless Dir.exist?(File.join(app_root, "storage"))
+
+  env = "development"
+  ARGV.each_with_index do |arg, index|
+    if arg == "-e"
+      env = ARGV[index + 1].to_s if ARGV[index + 1]
+    elsif arg.start_with?("--environment=")
+      env = arg.split("=", 2).last.to_s
+    end
+  end
+
+  sqlite_path =
+    case env
+    when "test" then File.join(app_root, "storage", "test.sqlite3")
+    when "production" then File.join(app_root, "storage", "production.sqlite3")
+    else File.join(app_root, "storage", "development.sqlite3")
+    end
+
+  unless File.exist?(sqlite_path)
+    success = system({ "SKIP_AUTO_DB_PREPARE" => "1" }, RbConfig.ruby, __FILE__, "db:prepare")
+    abort "Failed to run db:prepare" unless success
+  end
+end
+
+APP_PATH = File.expand_path("../config/application", __dir__)
+require_relative "../config/boot"
+require "rails/commands"

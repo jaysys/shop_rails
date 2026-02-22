@@ -1,0 +1,53 @@
+<% content_for :title, "관리자 - 사용자 상세" %>
+
+<section>
+  <h1>사용자 상세</h1>
+
+  <div class="checkout-card">
+    <p>ID: <strong><%= @user.id %></strong></p>
+    <p>이름: <strong><%= @user.name %></strong></p>
+    <p>이메일: <strong><%= @user.email %></strong></p>
+    <p>권한: <strong><%= @user.admin? ? "관리자" : "일반" %></strong></p>
+
+    <div class="row">
+      <%= form_with model: @user, url: admin_user_path(@user), method: :patch, class: "inline-form" do |form| %>
+        <%= form.hidden_field :admin, value: @user.admin? ? "0" : "1" %>
+        <%= form.submit(@user.admin? ? "관리자 해제" : "관리자 부여", class: "btn small") %>
+      <% end %>
+
+      <%= button_to "사용자 삭제", admin_user_path(@user), method: :delete, class: "btn danger small", form: { data: { turbo_confirm: "이 사용자를 삭제할까요?" }, class: "inline-form" } %>
+
+      <%= link_to "목록으로", admin_users_path, class: "text-link" %>
+    </div>
+  </div>
+
+  <h2>구매내역</h2>
+  <% if @orders.empty? %>
+    <p class="muted">결제 완료된 주문이 없습니다.</p>
+  <% else %>
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>주문번호</th>
+          <th>주문명</th>
+          <th>금액</th>
+          <th>상태</th>
+          <th>일시</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @orders.each do |order| %>
+          <tr>
+            <td><code><%= order.order_id %></code></td>
+            <td><%= order.order_name %></td>
+            <td><%= number_to_currency(order.amount, unit: "₩", precision: 0) %></td>
+            <td><%= order.status %></td>
+            <td><%= order.updated_at.strftime("%Y-%m-%d %H:%M") %></td>
+            <td><%= link_to "주문상세", admin_order_path(order), class: "text-link" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</section>

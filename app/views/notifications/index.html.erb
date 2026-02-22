@@ -1,0 +1,28 @@
+<% content_for :title, "알림" %>
+
+<section>
+  <div class="row">
+    <h1>알림</h1>
+    <%= button_to "모두 읽음 처리", read_all_notifications_path, method: :patch, class: "btn small", form: { class: "inline-form" } %>
+  </div>
+
+  <% if @notifications.blank? %>
+    <p class="muted">새 알림이 없습니다.</p>
+  <% else %>
+    <div class="notification-list">
+      <% @notifications.each do |notification| %>
+        <article class="notification-item <%= 'unread' unless notification.read? %>">
+          <div>
+            <p class="notification-message"><%= notification.message %></p>
+            <p class="muted"><%= notification.created_at.strftime("%Y-%m-%d %H:%M:%S") %></p>
+          </div>
+          <% if notification.read? %>
+            <span class="muted">읽음</span>
+          <% else %>
+            <%= button_to "열기", notification_path(notification), method: :patch, class: "btn small", form: { class: "inline-form" } %>
+          <% end %>
+        </article>
+      <% end %>
+    </div>
+  <% end %>
+</section>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+  <defs>
+    <linearGradient id="g5" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="640" fill="url(#g5)"/>
+  <ellipse cx="480" cy="350" rx="220" ry="140" fill="#ffffffcc"/>
+  <line x1="480" y1="230" x2="480" y2="370" stroke="#7f1d1d" stroke-width="10"/>
+  <circle cx="480" cy="300" r="16" fill="#7f1d1d"/>
+  <text x="480" y="140" text-anchor="middle" font-size="56" font-family="Arial, sans-serif" fill="#ffffff">ERGONOMIC MOUSE</text>
+</svg>

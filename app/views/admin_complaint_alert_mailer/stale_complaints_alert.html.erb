@@ -1,0 +1,36 @@
+<h1>접수 상태 문의 알림</h1>
+
+<p>
+  기준 시각 <strong><%= @cutoff_time.strftime("%Y-%m-%d %H:%M:%S") %></strong> 이전에 등록되고,
+  아직 <strong>접수됨(submitted)</strong> 상태인 문의가
+  <strong><%= @stale_complaints.size %>건</strong> 있습니다.
+</p>
+
+<table style="border-collapse: collapse; width: 100%;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">ID</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">제목</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">사용자</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">주문번호</th>
+      <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">등록일</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @stale_complaints.each do |complaint| %>
+      <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;"><%= complaint.id %></td>
+        <td style="border: 1px solid #ddd; padding: 8px;"><%= complaint.title %></td>
+        <td style="border: 1px solid #ddd; padding: 8px;"><%= complaint.user&.email || "-" %></td>
+        <td style="border: 1px solid #ddd; padding: 8px;"><%= complaint.order&.order_id || "-" %></td>
+        <td style="border: 1px solid #ddd; padding: 8px;"><%= complaint.created_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if @admin_url.present? %>
+  <p style="margin-top: 14px;">
+    <a href="<%= @admin_url %>">관리자 문의 화면으로 이동</a>
+  </p>
+<% end %>

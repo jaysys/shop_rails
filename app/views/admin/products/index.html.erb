@@ -1,0 +1,48 @@
+<% content_for :title, "관리자 - 상품 관리" %>
+
+<section>
+  <div class="row">
+    <h1>상품 관리</h1>
+    <%= link_to "신규 등록", new_admin_product_path, class: "btn" %>
+  </div>
+
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>이미지</th>
+        <th>상품명</th>
+        <th>카테고리</th>
+        <th>가격</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @products.each do |product| %>
+        <tr>
+          <td><%= product.id %></td>
+          <td>
+            <% if product.image.attached? %>
+              <%= image_tag product.image, class: "thumb-sm" %>
+            <% else %>
+              <span class="muted">-</span>
+            <% end %>
+          </td>
+          <td><%= product.name %></td>
+          <td>
+            <% if product.categories.any? %>
+              <%= product.categories.map(&:name).join(", ") %>
+            <% else %>
+              <span class="muted">미지정</span>
+            <% end %>
+          </td>
+          <td><%= number_to_currency(product.price) %></td>
+          <td>
+            <%= link_to "상세", admin_product_path(product), class: "text-link" %>
+            <%= link_to "수정", edit_admin_product_path(product), class: "text-link" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>

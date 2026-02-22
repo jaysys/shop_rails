@@ -1,0 +1,17 @@
+<% if logged_in? %>
+  <div
+    class="like-row"
+    data-controller="like-button"
+    data-like-button-url-value="<%= product_like_path(product) %>"
+    data-like-button-liked-value="<%= liked %>"
+    data-like-button-count-value="<%= like_count %>"
+  >
+    <button type="button" class="heart-btn" data-like-button-target="button" data-action="click->like-button#toggle">♡</button>
+    <span class="muted" data-like-button-target="countLabel">좋아요 <%= like_count %></span>
+  </div>
+<% else %>
+  <div class="like-row">
+    <span class="heart-btn disabled">♡</span>
+    <span class="muted">좋아요 <%= like_count %></span>
+  </div>
+<% end %>

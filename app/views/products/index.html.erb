@@ -1,0 +1,56 @@
+<% content_for :title, "상품 목록" %>
+
+<section class="hero-banner">
+  <div>
+    <h1>Today’s deals in shop_rails</h1>
+    <p>Daily curated picks inspired by large marketplace layouts. Fast browse, fast checkout.</p>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">
+    <h2>상품 목록</h2>
+    <p class="muted"><%= @query.present? ? "\"#{@query}\" 검색 결과" : "원하는 상품을 장바구니에 담아보세요." %></p>
+  </div>
+
+  <div class="category-filter-bar">
+    <%= link_to "전체", products_path(q: @query.presence), class: "category-chip #{'active' if @selected_category.blank?}" %>
+    <% @categories.each do |category| %>
+      <%= link_to category.name, products_path(category_id: category.id, q: @query.presence), class: "category-chip #{'active' if @selected_category&.id == category.id}" %>
+    <% end %>
+  </div>
+
+  <% if @products_by_category.blank? %>
+    <p class="muted">조건에 맞는 상품이 없습니다.</p>
+  <% else %>
+    <% @products_by_category.each do |category, items| %>
+      <section class="category-section">
+        <div class="section-head">
+          <h2><%= category.name %></h2>
+          <p class="muted"><%= items.size %>개 상품</p>
+        </div>
+
+        <div class="grid">
+          <% items.each do |product| %>
+            <article class="card product-card">
+              <% if product.image.attached? %>
+                <%= image_tag product.image, class: "product-image" %>
+              <% end %>
+              <h3><%= link_to product.name, product_path(product), class: "product-link" %></h3>
+              <%= render "like_row", product: product, liked: @liked_product_ids.include?(product.id), like_count: (@product_like_counts[product.id] || 0) %>
+              <div class="product-meta-row">
+                <% product.categories.each do |c| %>
+                  <span class="tag-chip"><%= c.name %></span>
+                <% end %>
+              </div>
+              <p class="price"><%= number_to_currency(product.price) %></p>
+              <p><%= truncate(product.description, length: 100) %></p>
+
+              <%= button_to "장바구니 담기", cart_items_path(product_id: product.id), method: :post, class: "btn" %>
+            </article>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  <% end %>
+</section>

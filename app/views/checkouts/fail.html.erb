@@ -1,0 +1,15 @@
+<% content_for :title, "결제 실패" %>
+
+<section class="checkout-card">
+  <h1>결제에 실패했습니다</h1>
+  <p>오류코드: <strong><%= @code.presence || "UNKNOWN" %></strong></p>
+  <p>메시지: <strong><%= @message.presence || "결제를 완료하지 못했습니다." %></strong></p>
+  <% if @order_id.present? %>
+    <p>주문번호: <strong><%= @order_id %></strong></p>
+  <% end %>
+
+  <div class="row">
+    <%= link_to "다시 결제 시도", checkout_path, class: "text-link" %>
+    <%= link_to "장바구니", cart_path, class: "text-link" %>
+  </div>
+</section>

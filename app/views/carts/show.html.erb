@@ -1,0 +1,48 @@
+<% content_for :title, "장바구니" %>
+
+<section>
+  <h1>장바구니</h1>
+
+  <% if @cart_items.empty? %>
+    <p class="muted">장바구니가 비어 있습니다.</p>
+    <%= link_to "상품 보러가기", products_path, class: "text-link" %>
+  <% else %>
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>상품명</th>
+          <th>가격</th>
+          <th>수량</th>
+          <th>소계</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @cart_items.each do |item| %>
+          <tr>
+            <td><%= link_to item.product.name, product_path(item.product), class: "text-link" %></td>
+            <td><%= number_to_currency(item.product.price) %></td>
+            <td>
+              <%= form_with model: item, url: cart_item_path(item), method: :patch, class: "qty-form" do |form| %>
+                <%= form.number_field :quantity, min: 1 %>
+                <%= form.submit "변경", class: "btn small" %>
+              <% end %>
+            </td>
+            <td><%= number_to_currency(item.subtotal) %></td>
+            <td>
+              <%= button_to "삭제", cart_item_path(item), method: :delete, class: "btn danger", form: { data: { turbo_confirm: "이 상품을 삭제할까요?" } } %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <div class="cart-footer">
+      <strong>총액: <%= number_to_currency(@total_amount) %></strong>
+      <div class="row">
+        <%= link_to "결제하기", checkout_path, class: "btn" %>
+        <%= button_to "장바구니 비우기", cart_path, method: :delete, class: "btn danger", form: { data: { turbo_confirm: "장바구니를 비울까요?" } } %>
+      </div>
+    </div>
+  <% end %>
+</section>

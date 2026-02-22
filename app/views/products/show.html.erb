@@ -1,0 +1,59 @@
+<% content_for :title, @product.name %>
+
+<article class="product-detail">
+  <% if @product.image.attached? %>
+    <%= image_tag @product.image, class: "product-image-lg" %>
+  <% end %>
+  <h1><%= @product.name %></h1>
+  <div class="product-meta-row">
+    <% @product.categories.each do |category| %>
+      <span class="tag-chip"><%= category.name %></span>
+    <% end %>
+  </div>
+  <p class="price"><%= number_to_currency(@product.price) %></p>
+  <p><%= simple_format(@product.description) %></p>
+  <%= render "like_row", product: @product, liked: @liked, like_count: @product_like_count %>
+
+  <div class="row">
+    <%= button_to "장바구니 담기", cart_items_path(product_id: @product.id), method: :post, class: "btn" %>
+    <%= link_to "목록으로", products_path, class: "text-link" %>
+  </div>
+</article>
+
+<section class="review-section">
+  <h2>구매자 품평</h2>
+
+  <% if logged_in? %>
+    <% if @can_review %>
+      <%= form_with model: @review, url: product_reviews_path(@product), local: true, class: "auth-card review-form" do |form| %>
+        <div class="field-block">
+          <%= form.label :content, "리뷰 작성" %>
+          <%= form.text_area :content, rows: 5, required: true, maxlength: 2000, placeholder: "구매 후기를 남겨주세요." %>
+        </div>
+        <%= form.submit "리뷰 등록", class: "btn small" %>
+      <% end %>
+    <% elsif @my_review.present? %>
+      <p class="muted">이미 리뷰를 작성했습니다.</p>
+    <% else %>
+      <p class="muted">이 상품을 구매한 사용자만 리뷰를 작성할 수 있습니다.</p>
+    <% end %>
+  <% else %>
+    <p class="muted">리뷰를 작성하려면 로그인하세요.</p>
+  <% end %>
+
+  <% if @reviews.blank? %>
+    <p class="muted">등록된 리뷰가 없습니다.</p>
+  <% else %>
+    <div class="review-list">
+      <% @reviews.each do |review| %>
+        <article class="review-item">
+          <p class="review-head">
+            <strong><%= review.user.name %></strong>
+            <span class="muted"><%= review.created_at.strftime("%Y-%m-%d %H:%M") %></span>
+          </p>
+          <p><%= simple_format(review.content) %></p>
+        </article>
+      <% end %>
+    </div>
+  <% end %>
+</section>

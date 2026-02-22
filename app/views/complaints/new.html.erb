@@ -1,0 +1,37 @@
+<% content_for :title, "문의 등록" %>
+
+<section class="auth-card complaint-form-card">
+  <h1>문의 등록</h1>
+  <p class="muted">주문 관련 이슈나 불편사항을 남겨주시면 관리자가 확인 후 답변합니다.</p>
+
+  <%= form_with model: @complaint, local: true do |form| %>
+    <% if @complaint.errors.any? %>
+      <div class="flash alert"><%= @complaint.errors.full_messages.join(", ") %></div>
+    <% end %>
+
+    <div class="field-block">
+      <%= form.label :order_id, "관련 주문 (선택)" %>
+      <%= form.collection_select :order_id, @orders, :id, :order_id, { include_blank: "선택 안함" }, {} %>
+    </div>
+
+    <div class="field-block">
+      <%= form.label :title, "제목" %>
+      <%= form.text_field :title, required: true, maxlength: 180, placeholder: "예: 결제는 되었는데 주문 상태가 이상해요" %>
+    </div>
+
+    <div class="field-block">
+      <%= form.label :content, "문의 내용" %>
+      <%= form.text_area :content, rows: 8, required: true, maxlength: 5000, placeholder: "상황을 자세히 적어주세요." %>
+    </div>
+
+    <div class="field-block">
+      <%= form.label :attachment, "첨부 이미지 (선택)" %>
+      <%= form.file_field :attachment, accept: "image/*" %>
+    </div>
+
+    <div class="row">
+      <%= form.submit "문의 접수", class: "btn" %>
+      <%= link_to "취소", complaints_path, class: "text-link" %>
+    </div>
+  <% end %>
+</section>

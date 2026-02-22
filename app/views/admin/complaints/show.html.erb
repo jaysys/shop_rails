@@ -1,0 +1,52 @@
+<% content_for :title, "관리자 - 문의 상세" %>
+
+<section>
+  <div class="row">
+    <h1>문의 상세/처리</h1>
+    <%= link_to "목록", admin_complaints_path, class: "text-link" %>
+  </div>
+
+  <div class="checkout-card">
+    <p>문의번호: <strong>#<%= @complaint.id %></strong></p>
+    <p>사용자: <strong><%= @complaint.user&.name %></strong> (<%= @complaint.user&.email %>)</p>
+    <p>주문번호: <strong><%= @complaint.order&.order_id || "-" %></strong></p>
+    <p>제목: <strong><%= @complaint.title %></strong></p>
+    <p>상태: <span class="status-badge <%= @complaint.status %>"><%= @complaint.status_label %></span></p>
+    <p>등록일: <strong><%= @complaint.created_at.strftime("%Y-%m-%d %H:%M:%S") %></strong></p>
+    <% if @complaint.resolved_at.present? %>
+      <p>처리일: <strong><%= @complaint.resolved_at.strftime("%Y-%m-%d %H:%M:%S") %></strong></p>
+    <% end %>
+
+    <hr class="profile-divider">
+    <h2>문의 내용</h2>
+    <p><%= simple_format(@complaint.content) %></p>
+
+    <% if @complaint.attachment.attached? %>
+      <h2>첨부 이미지</h2>
+      <%= image_tag @complaint.attachment, class: "product-image-lg" %>
+    <% end %>
+
+    <hr class="profile-divider">
+    <h2>처리 업데이트</h2>
+
+    <%= form_with model: [:admin, @complaint], method: :patch, local: true do |form| %>
+      <% if @complaint.errors.any? %>
+        <div class="flash alert"><%= @complaint.errors.full_messages.join(", ") %></div>
+      <% end %>
+
+      <div class="field-block">
+        <%= form.label :status, "처리 상태" %>
+        <%= form.select :status, Complaint::STATUSES.map { |s| [Complaint::STATUS_LABELS.fetch(s, s), s] } %>
+      </div>
+
+      <div class="field-block">
+        <%= form.label :admin_reply, "관리자 답변" %>
+        <%= form.text_area :admin_reply, rows: 7, maxlength: 5000, placeholder: "고객에게 전달할 답변을 입력하세요." %>
+      </div>
+
+      <div class="row">
+        <%= form.submit "저장", class: "btn" %>
+      </div>
+    <% end %>
+  </div>
+</section>

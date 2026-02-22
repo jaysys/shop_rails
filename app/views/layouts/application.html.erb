@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Shop Rails" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="header-top">
+        <div class="container header-top-inner">
+          <%= link_to "shop_rails", root_path, class: "brand-logo" %>
+
+          <div class="header-actions">
+            <div class="header-search" data-controller="search-modal">
+              <button type="button" class="search-trigger-btn header-action-btn" data-action="click->search-modal#toggle" data-search-modal-target="button">
+                검색
+              </button>
+              <div class="search-popover hidden" data-search-modal-target="panel">
+                <%= form_with url: products_path, method: :get, class: "search-popover-form", local: true do |form| %>
+                  <%= form.text_field :q, value: params[:q], placeholder: "검색어를 입력하세요", class: "search-popover-input", data: { search_modal_target: "input" } %>
+                  <%= form.submit "검색", class: "search-btn" %>
+                <% end %>
+              </div>
+            </div>
+
+            <% if logged_in? %>
+              <span class="header-user"><%= current_user.name %></span>
+              <%= link_to notifications_path, class: "header-link" do %>
+                알림
+                <% if unread_notifications_count.positive? %>
+                  <span class="notification-dot"><%= unread_notifications_count %></span>
+                <% end %>
+              <% end %>
+              <%= link_to "내 프로필", edit_profile_path, class: "header-link header-action-btn" %>
+            <% else %>
+              <%= link_to "로그인", login_path, class: "header-link header-action-btn" %>
+              <%= link_to "회원가입", signup_path, class: "header-link header-action-btn" %>
+            <% end %>
+            <%= link_to "장바구니 (#{current_cart_count})", cart_path, class: "cart-pill header-action-btn" %>
+            <% if logged_in? %>
+              <%= button_to "로그아웃", logout_path, method: :delete, class: "header-btn header-action-btn", form: { class: "inline-form", data: { turbo_confirm: "정말 로그아웃하시겠습니까?" } } %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-main">
+        <div class="container header-main-inner">
+          <%= link_to "상품", products_path, class: "menu-link" %>
+          <%= link_to "구매내역", orders_path, class: "menu-link" %>
+          <% if logged_in? %>
+            <%= link_to "문의", complaints_path, class: "menu-link" %>
+          <% end %>
+          <% if admin? %>
+            <%= link_to "관리자", admin_root_path, class: "menu-link" %>
+            <%= link_to "상품관리", admin_products_path, class: "menu-link" %>
+            <%= link_to "문의관리", admin_complaints_path, class: "menu-link" %>
+          <% end %>
+        </div>
+      </div>
+    </header>
+
+    <div class="toast-stack" data-controller="toast-stack" aria-live="polite" aria-atomic="true">
+      <% flash.each do |type, message| %>
+        <% next if message.blank? %>
+        <% toast_type = type.to_s == "notice" ? "notice" : "alert" %>
+        <div
+          class="toast <%= toast_type %>"
+          data-controller="toast"
+          data-toast-delay-value="2600"
+        >
+          <%= message %>
+        </div>
+      <% end %>
+    </div>
+
+    <main class="main-body">
+      <div class="container">
+        <%= yield %>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-top">
+        <a href="#" class="back-to-top">Back to top</a>
+      </div>
+      <div class="footer-main">
+        <div class="container footer-grid">
+          <div>
+            <h4>Get to Know Us</h4>
+            <p>About shop_rails</p>
+            <p>Careers</p>
+            <p>Press</p>
+          </div>
+          <div>
+            <h4>Make Money</h4>
+            <p>Sell products</p>
+            <p>Advertise</p>
+            <p>Affiliate program</p>
+          </div>
+          <div>
+            <h4>Support</h4>
+            <p>Customer service</p>
+            <p>Returns & refunds</p>
+            <p>Order tracking</p>
+          </div>
+          <div>
+            <h4>Connect</h4>
+            <p>Developers</p>
+            <p>Partnership</p>
+            <p>Contact</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">© <%= Time.current.year %> shop_rails. All rights reserved.</div>
+    </footer>
+  </body>
+</html>

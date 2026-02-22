@@ -1,0 +1,266 @@
+<% content_for :title, "관리자" %>
+
+<section>
+  <h1>관리자</h1>
+
+  <div class="admin-tabs">
+    <%= link_to "사용자관리", admin_root_path(tab: "users"), class: "admin-tab #{"active" if @tab == "users"}" %>
+    <%= link_to "일자별 구매내역", admin_root_path(tab: "daily_orders"), class: "admin-tab #{"active" if @tab == "daily_orders"}" %>
+    <%= link_to "구매 통계", admin_root_path(tab: "purchase_stats"), class: "admin-tab #{"active" if @tab == "purchase_stats"}" %>
+    <%= link_to "좋아요 통계", admin_root_path(tab: "like_stats"), class: "admin-tab #{"active" if @tab == "like_stats"}" %>
+  </div>
+
+  <% if @tab == "users" %>
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>이름</th>
+          <th>이메일</th>
+          <th>권한</th>
+          <th>가입일</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td><%= user.admin? ? "관리자" : "일반" %></td>
+            <td><%= user.created_at.strftime("%Y-%m-%d") %></td>
+            <td>
+              <%= link_to "상세", admin_user_path(user), class: "text-link" %>
+              <%= form_with model: user, url: admin_user_path(user), method: :patch, class: "inline-form" do |form| %>
+                <%= form.hidden_field :admin, value: user.admin? ? "0" : "1" %>
+                <%= form.submit(user.admin? ? "관리자 해제" : "관리자 부여", class: "btn small") %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% elsif @tab == "daily_orders" %>
+    <% pdf_params = { tab: "daily_orders", format: :pdf } %>
+    <% if @recent_days.positive? %>
+      <% pdf_params[:recent_days] = @recent_days %>
+    <% elsif @from_date.present? || @to_date.present? %>
+      <% pdf_params[:from_date] = @from_date %>
+      <% pdf_params[:to_date] = @to_date %>
+    <% else %>
+      <% pdf_params[:recent_days] = 0 %>
+    <% end %>
+
+    <div class="filter-bar">
+      <%= form_with url: admin_root_path, method: :get, local: true, class: "filter-form" do |form| %>
+        <%= form.hidden_field :tab, value: "daily_orders" %>
+        <div class="filter-field">
+          <%= form.label :from_date, "시작일" %>
+          <%= form.date_field :from_date, value: @from_date %>
+        </div>
+        <div class="filter-field">
+          <%= form.label :to_date, "종료일" %>
+          <%= form.date_field :to_date, value: @to_date %>
+        </div>
+        <%= form.submit "조회", class: "btn small" %>
+      <% end %>
+
+      <div class="quick-range">
+        <span class="muted">최근 기간:</span>
+        <%= link_to "1일", admin_root_path(tab: "daily_orders", recent_days: 1), class: "admin-tab #{"active" if @recent_days == 1}" %>
+        <%= link_to "7일", admin_root_path(tab: "daily_orders", recent_days: 7), class: "admin-tab #{"active" if @recent_days == 7}" %>
+        <%= link_to "30일", admin_root_path(tab: "daily_orders", recent_days: 30), class: "admin-tab #{"active" if @recent_days == 30}" %>
+        <%= link_to "90일", admin_root_path(tab: "daily_orders", recent_days: 90), class: "admin-tab #{"active" if @recent_days == 90}" %>
+        <%= link_to "전체", admin_root_path(tab: "daily_orders", recent_days: 0), class: "admin-tab #{"active" if @recent_days.zero? && @from_date.blank? && @to_date.blank?}" %>
+        <%= link_to "PDF 저장", admin_root_path(**pdf_params), class: "btn small" %>
+      </div>
+    </div>
+
+    <% if @from_date && @to_date %>
+      <p class="muted">
+        조회기간:
+        <strong><%= @from_date.beginning_of_day.strftime("%Y-%m-%d %H:%M:%S") %></strong>
+        ~
+        <strong><%= @to_date.end_of_day.strftime("%Y-%m-%d %H:%M:%S") %></strong>
+      </p>
+    <% end %>
+
+    <% if @orders_by_date.blank? %>
+      <p class="muted">결제완료 주문이 없습니다.</p>
+    <% else %>
+      <% @orders_by_date.each do |date, orders| %>
+        <div class="date-block">
+          <h2><%= date.strftime("%Y-%m-%d") %></h2>
+          <p class="muted">총 <%= orders.size %>건, 합계 <%= number_to_currency(orders.sum(&:amount), unit: "₩", precision: 0) %></p>
+
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>주문번호</th>
+                <th>사용자</th>
+                <th>주문명</th>
+                <th>결제금액</th>
+                <th>결제완료일</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% orders.each do |order| %>
+                <tr>
+                  <td><code><%= order.order_id %></code></td>
+                  <td><%= order.user&.name || "(미연결)" %></td>
+                  <td><%= order.order_name %></td>
+                  <td><%= number_to_currency(order.amount, unit: "₩", precision: 0) %></td>
+                  <td><%= order.updated_at.strftime("%Y-%m-%d %H:%M:%S") %></td>
+                  <td><%= link_to "주문상세", admin_order_path(order), class: "text-link" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    <% end %>
+  <% elsif @tab == "purchase_stats" %>
+    <% purchase_pdf_params = { tab: "purchase_stats", format: :pdf } %>
+    <% if @purchase_recent_days.positive? %>
+      <% purchase_pdf_params[:purchase_recent_days] = @purchase_recent_days %>
+    <% elsif @purchase_from_date.present? || @purchase_to_date.present? %>
+      <% purchase_pdf_params[:purchase_from_date] = @purchase_from_date %>
+      <% purchase_pdf_params[:purchase_to_date] = @purchase_to_date %>
+    <% else %>
+      <% purchase_pdf_params[:purchase_recent_days] = 0 %>
+    <% end %>
+
+    <div class="filter-bar">
+      <%= form_with url: admin_root_path, method: :get, local: true, class: "filter-form" do |form| %>
+        <%= form.hidden_field :tab, value: "purchase_stats" %>
+        <div class="filter-field">
+          <%= form.label :purchase_from_date, "시작일" %>
+          <%= form.date_field :purchase_from_date, value: @purchase_from_date %>
+        </div>
+        <div class="filter-field">
+          <%= form.label :purchase_to_date, "종료일" %>
+          <%= form.date_field :purchase_to_date, value: @purchase_to_date %>
+        </div>
+        <%= form.submit "조회", class: "btn small" %>
+      <% end %>
+
+      <div class="quick-range">
+        <span class="muted">최근 기간:</span>
+        <%= link_to "1일", admin_root_path(tab: "purchase_stats", purchase_recent_days: 1), class: "admin-tab #{"active" if @purchase_recent_days == 1}" %>
+        <%= link_to "7일", admin_root_path(tab: "purchase_stats", purchase_recent_days: 7), class: "admin-tab #{"active" if @purchase_recent_days == 7}" %>
+        <%= link_to "30일", admin_root_path(tab: "purchase_stats", purchase_recent_days: 30), class: "admin-tab #{"active" if @purchase_recent_days == 30}" %>
+        <%= link_to "90일", admin_root_path(tab: "purchase_stats", purchase_recent_days: 90), class: "admin-tab #{"active" if @purchase_recent_days == 90}" %>
+        <%= link_to "전체", admin_root_path(tab: "purchase_stats", purchase_recent_days: 0), class: "admin-tab #{"active" if @purchase_recent_days.zero? && @purchase_from_date.blank? && @purchase_to_date.blank?}" %>
+        <%= link_to "PDF 저장", admin_root_path(**purchase_pdf_params), class: "btn small" %>
+      </div>
+    </div>
+
+    <% if @purchase_from_date && @purchase_to_date %>
+      <p class="muted">
+        조회기간:
+        <strong><%= @purchase_from_date.beginning_of_day.strftime("%Y-%m-%d %H:%M:%S") %></strong>
+        ~
+        <strong><%= @purchase_to_date.end_of_day.strftime("%Y-%m-%d %H:%M:%S") %></strong>
+      </p>
+    <% end %>
+
+    <div class="checkout-card">
+      <p>대상 주문 수: <strong><%= @purchase_summary[:orders_count] %></strong></p>
+      <p>총 판매 수량: <strong><%= @purchase_summary[:total_quantity] %></strong></p>
+      <p>총 판매 금액: <strong><%= number_to_currency(@purchase_summary[:total_sales], unit: "₩", precision: 0) %></strong></p>
+    </div>
+
+    <% if @category_product_stats_grouped.blank? %>
+      <p class="muted">조회기간 내 집계 가능한 구매 데이터가 없습니다.</p>
+    <% else %>
+      <% @category_product_stats_grouped.each do |category_name, rows| %>
+        <div class="date-block">
+          <h2><%= category_name %></h2>
+          <table class="cart-table">
+            <thead>
+              <tr>
+                <th>순위</th>
+                <th>상품명</th>
+                <th>구매 수량</th>
+                <th>주문 건수</th>
+                <th>매출</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.each_with_index do |row, idx| %>
+                <tr>
+                  <td><%= idx + 1 %></td>
+                  <td><%= row.attributes["product_name"] %></td>
+                  <td><%= row.attributes["total_quantity"] %></td>
+                  <td><%= row.attributes["order_count"] %></td>
+                  <td><%= number_to_currency(row.attributes["total_sales"].to_f, unit: "₩", precision: 0) %></td>
+                  <td><%= link_to "상품상세", admin_product_path(row.attributes["product_id"]), class: "text-link" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+    <% end %>
+  <% elsif @tab == "like_stats" %>
+    <div class="checkout-card">
+      <p>총 좋아요 수: <strong><%= @total_likes %></strong></p>
+      <p>오늘 좋아요 수: <strong><%= @today_likes %></strong></p>
+    </div>
+
+    <div class="date-block">
+      <h2>상품별 좋아요 TOP</h2>
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>상품명</th>
+            <th>좋아요 수</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @top_liked_products.each_with_index do |product, idx| %>
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td><%= product.name %></td>
+              <td><%= product.attributes["likes_count"] %></td>
+              <td><%= link_to "상품상세", admin_product_path(product), class: "text-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="date-block">
+      <h2>사용자별 좋아요 활동 TOP</h2>
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>사용자</th>
+            <th>이메일</th>
+            <th>좋아요 수</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @top_active_users.each_with_index do |user, idx| %>
+            <tr>
+              <td><%= idx + 1 %></td>
+              <td><%= user.name %></td>
+              <td><%= user.email %></td>
+              <td><%= user.attributes["likes_count"] %></td>
+              <td><%= link_to "사용자상세", admin_user_path(user), class: "text-link" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="muted">표시할 데이터가 없습니다.</p>
+  <% end %>
+</section>

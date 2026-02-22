@@ -1,0 +1,30 @@
+<% content_for :title, "로그인" %>
+
+<section class="auth-shell">
+  <div class="auth-intro">
+    <p class="auth-kicker">Welcome Back</p>
+    <h1>로그인</h1>
+    <p class="muted">등록된 이메일과 비밀번호로 빠르게 로그인하세요.</p>
+  </div>
+
+  <div class="auth-card auth-panel">
+    <%= form_with url: session_path, scope: :session, class: "auth-form" do |form| %>
+      <div class="field-block">
+        <%= form.label :email, "이메일" %>
+        <%= form.email_field :email, required: true, autofocus: true, autocomplete: "email", placeholder: "name@example.com" %>
+      </div>
+
+      <div class="field-block">
+        <%= form.label :password, "비밀번호" %>
+        <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "비밀번호 입력" %>
+      </div>
+
+      <%= form.submit "로그인", class: "btn auth-submit" %>
+    <% end %>
+
+    <div class="auth-footnote">
+      <span class="muted">계정이 없나요?</span>
+      <%= link_to "회원가입", signup_path, class: "text-link" %>
+    </div>
+  </div>
+</section>

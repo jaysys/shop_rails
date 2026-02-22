@@ -1,0 +1,37 @@
+<% content_for :title, "내 문의 내역" %>
+
+<section>
+  <div class="row">
+    <h1>내 문의 내역</h1>
+    <%= link_to "문의 등록", new_complaint_path, class: "btn small" %>
+  </div>
+
+  <% if @complaints.blank? %>
+    <p class="muted">등록된 문의가 없습니다.</p>
+  <% else %>
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>제목</th>
+          <th>주문번호</th>
+          <th>상태</th>
+          <th>등록일</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @complaints.each do |complaint| %>
+          <tr>
+            <td><%= complaint.id %></td>
+            <td><%= complaint.title %></td>
+            <td><%= complaint.order&.order_id || "-" %></td>
+            <td><span class="status-badge <%= complaint.status %>"><%= complaint.status_label %></span></td>
+            <td><%= complaint.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+            <td><%= link_to "상세", complaint_path(complaint), class: "text-link" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</section>

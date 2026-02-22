@@ -1,0 +1,74 @@
+<% content_for :title, "내 프로필" %>
+
+<section class="profile-shell">
+  <header class="profile-header">
+    <p class="muted profile-kicker">Account</p>
+    <h1>내 프로필</h1>
+    <p class="muted">회원 정보와 비밀번호를 이 화면에서 관리할 수 있습니다.</p>
+  </header>
+
+  <div class="profile-layout">
+    <aside class="profile-summary">
+      <h2>현재 정보</h2>
+      <dl>
+        <dt>이름</dt>
+        <dd><%= @user.name %></dd>
+        <dt>이메일</dt>
+        <dd><%= @user.email %></dd>
+        <dt>권한</dt>
+        <dd><%= @user.admin? ? "관리자" : "일반 사용자" %></dd>
+      </dl>
+    </aside>
+
+    <section class="auth-card profile-form-card">
+      <%= form_with model: @user, url: profile_path, method: :patch do |form| %>
+        <% if @user.errors.any? %>
+          <div class="flash alert">
+            <%= @user.errors.full_messages.join(", ") %>
+          </div>
+        <% end %>
+
+        <div class="field-block">
+          <%= form.label :name, "이름" %>
+          <%= form.text_field :name, required: true, maxlength: 80 %>
+        </div>
+
+        <div class="field-block">
+          <%= form.label :email, "이메일" %>
+          <%= form.email_field :email, required: true %>
+        </div>
+
+        <hr class="profile-divider">
+        <p class="muted">비밀번호를 바꾸려면 아래를 입력하세요. 변경이 필요 없으면 비워두세요.</p>
+
+        <div class="field-block">
+          <%= form.label :password, "새 비밀번호" %>
+          <%= form.password_field :password, minlength: 8 %>
+        </div>
+
+        <div class="field-block">
+          <%= form.label :password_confirmation, "새 비밀번호 확인" %>
+          <%= form.password_field :password_confirmation, minlength: 8 %>
+        </div>
+
+        <div class="row">
+          <%= form.submit "프로필 저장", class: "btn" %>
+          <%= link_to "취소", root_path, class: "text-link" %>
+        </div>
+      <% end %>
+    </section>
+  </div>
+
+  <section class="profile-tip">
+    <h2>보안 안내</h2>
+    <p class="muted">
+      공용 PC에서는 작업 후 반드시 로그아웃하고, 비밀번호는 최소 8자 이상으로 설정하세요.
+    </p>
+  </section>
+
+  <section class="profile-tip withdrawal-box">
+    <h2>회원 탈퇴</h2>
+    <p class="muted">탈퇴하면 계정과 작성한 활동 데이터가 삭제되며 복구할 수 없습니다.</p>
+    <%= button_to "회원 탈퇴", profile_path, method: :delete, class: "btn danger", form: { data: { turbo_confirm: "정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다." }, class: "inline-form" } %>
+  </section>
+</section>

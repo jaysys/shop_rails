@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b7a75"/>
+      <stop offset="100%" stop-color="#164e63"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="640" fill="url(#g1)"/>
+  <rect x="160" y="80" width="640" height="480" rx="36" fill="#ffffff22"/>
+  <text x="480" y="280" text-anchor="middle" font-size="72" font-family="Arial, sans-serif" fill="#ffffff">RAILS HOODIE</text>
+  <text x="480" y="350" text-anchor="middle" font-size="28" font-family="Arial, sans-serif" fill="#e2e8f0">Warm and Lightweight</text>
+</svg>
